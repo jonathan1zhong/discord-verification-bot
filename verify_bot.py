@@ -16,11 +16,10 @@ intents = discord.Intents.all()
 
 intents = discord.Intents.all()
 
-# Use a neutral prefix since we only use slash commands
 bot = commands.Bot(command_prefix=commands.when_mentioned, intents=intents)
 
 ROLE_NAME = "Verified"
-SENDER_EMAIL = "gtoilliniverify@gmail.com"
+SENDER_EMAIL = ""
 CODE_EXP = timedelta(minutes=10)
 
 # Rate limit: allow up to 3 /verify calls per 10 minutes, then block for 10 minutes
@@ -33,9 +32,6 @@ pending_verification: dict[int, dict] = {}
 # user_id -> {"hits": int, "window_start": datetime(UTC), "blocked_until": datetime(UTC) | None}
 verify_ratelimit: dict[int, dict] = {}
 
-# -----------------------
-# Email
-# -----------------------
 def send_verification_email(netid: str, code: str):
     recipient = f"{netid}@illinois.edu"
     subject = "Discord Verification Code"
@@ -48,9 +44,7 @@ def send_verification_email(netid: str, code: str):
         server.login(SENDER_EMAIL, sender_passcode)
         server.sendmail(SENDER_EMAIL, [recipient], message)
 
-# -----------------------
-# Helpers
-# -----------------------
+# -----Helper functions-----
 def time_now() -> datetime:
     return datetime.now(timezone.utc)
 
@@ -129,9 +123,7 @@ def check_and_update_verify_ratelimit(user_id: int) -> tuple[bool, str | None]:
         return False, f"Too many `/verify` attempts. Try again in **{cooldown_remaining(remaining)}**."
     return True, None
 
-# -----------------------
-# Commands
-# -----------------------
+# -----Commands-----
 @bot.tree.command(name="verify", description="Send a verification code to your illinois.edu email.")
 @app_commands.describe(netid="Your Illinois NetID (e.g., jdoe3)")
 async def verify(inter: discord.Interaction, netid: str):
@@ -261,9 +253,7 @@ async def cleanup_ratelimit():
 async def before_cleanup():
     await bot.wait_until_ready()
 
-# -----------------------
-# Events
-# -----------------------
+# ----Clean-----
 @bot.event
 async def on_ready():
     if not cleanup_ratelimit.is_running():
@@ -271,7 +261,5 @@ async def on_ready():
     await bot.tree.sync()
     print("bot is online")
 
-# -----------------------
-# Run
-# -----------------------
+# -----Start-----
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
