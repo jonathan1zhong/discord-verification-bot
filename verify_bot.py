@@ -22,14 +22,11 @@ ROLE_NAME = "Verified"
 SENDER_EMAIL = ""
 CODE_EXP = timedelta(minutes=10)
 
-# Rate limit: allow up to 3 /verify calls per 10 minutes, then block for 10 minutes
 VERIFY_WINDOW = timedelta(minutes=10)
 VERIFY_BLOCK = timedelta(minutes=10)
 
-# user_id -> {"netid": str, "code": str, "expires_at": datetime(UTC)}
 pending_verification: dict[int, dict] = {}
 
-# user_id -> {"hits": int, "window_start": datetime(UTC), "blocked_until": datetime(UTC) | None}
 verify_ratelimit: dict[int, dict] = {}
 
 def send_verification_email(netid: str, code: str):
